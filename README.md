@@ -24,7 +24,7 @@ export GHOST_API_KEY='...'
 
 ```
 
-Or set `openai.api_key` to `./.env`:
+Or set `OPENAI_API_KEY` & `GHOST_ADMIN_API_KEY` to `./.env`:
 
 ```python
 [BASIC]
