@@ -16,7 +16,12 @@ pip install openai pandas matplotlib scipy scikit-learn plotly pyjwt
 
 ## Usage
 
-The library needs to be configured with your account's secret key which is available on the [website](https://platform.openai.com/account/api-keys). Either set it as the `OPENAI_API_KEY` environment variable before using the library:
+The library needs to be configured with your account's secret key.
+OpenAI API Key is available on the [website](https://platform.openai.com/account/api-keys). 
+
+Ghost Admin API Key can be found by following instructions here: [website](https://ghost.org/docs/admin-api/#token-authentication)
+  
+Either set it as the `OPENAI_API_KEY` & `GHOST_ADMIN_API_KEY` environment variable before using the library:
 
 ```bash
 export OPENAI_API_KEY='sk-...'
@@ -35,7 +40,7 @@ EMBEDDING_OUTPUT_PATH=./output
 MAX_RELATED_BLOG_COUNT=20
 ```
 
-After all set, execute the following command:
+After all set, start the script as following:
 ```sh
 python ghost_relation_tags.py
 
