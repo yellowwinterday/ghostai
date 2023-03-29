@@ -3,7 +3,7 @@
 GhostAI Related Posts is a project that utilizes OpenAI Embedding API to generate related blog post tags for a given Ghost Blogging site. The project provides the functionality to display "Related Posts" at the bottom of each blog post. Currently, this feature is not available in Ghost.
 
 Check out a sample blog post with related topics at the bottm:
-[website](http://threerowselectric.com/experiences-with-the-standard-suspension-on-bmw-ix50-what-type-of-suspension-should-you-pick/)
+[[website](http://threerowselectric.com/experiences-with-the-standard-suspension-on-bmw-ix50-what-type-of-suspension-should-you-pick/)](http://threerowselectric.com/experiences-with-the-standard-suspension-on-bmw-ix50-what-type-of-suspension-should-you-pick/)
 
 The project comprises of two scripts that can be executed either on a local machine or directly on the server. Unless the site has tens of thousands of blog posts, running the scripts on a local machine should suffice.
 
@@ -32,7 +32,7 @@ pip install openai pandas matplotlib scipy scikit-learn plotly pyjwt
 
 ## Usage
 
-The library needs to be configured with your account's secret key. OpenAI API Key is available on the [website](https://platform.openai.com/account/api-keys). Ghost Admin API Key can be found by following instructions here: [website](https://ghost.org/docs/admin-api/#token-authentication)
+The library needs to be configured with your OpenAI account's API key. OpenAI API Key is available on their webiste at [[website](https://platform.openai.com/account/api-keys)](https://platform.openai.com/account/api-keys). Ghost Admin API Key can be found by following instructions here: [Ghost Token Authentication](https://ghost.org/docs/admin-api/#token-authentication)
 
 Either set it as the `OPENAI_API_KEY` & `GHOST_ADMIN_API_KEY` environment variable before using the library:
 
