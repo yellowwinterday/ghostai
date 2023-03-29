@@ -32,7 +32,7 @@ pip install openai pandas matplotlib scipy scikit-learn plotly pyjwt
 
 ## Usage
 
-The library needs to be configured with your OpenAI account's API key. OpenAI API Key is available on their webiste at [[website](https://platform.openai.com/account/api-keys)](https://platform.openai.com/account/api-keys). Ghost Admin API Key can be found by following instructions here: [Ghost Token Authentication](https://ghost.org/docs/admin-api/#token-authentication)
+The library needs to be configured with your OpenAI account's API key. OpenAI API Key is available on their webiste at https://platform.openai.com/account/api-keys. Ghost Admin API Key can be found by following instructions at https://ghost.org/docs/admin-api/#token-authentication
 
 Either set it as the `OPENAI_API_KEY` & `GHOST_ADMIN_API_KEY` environment variable before using the library:
 
