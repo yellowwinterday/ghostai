@@ -3,7 +3,7 @@
 GhostAI Related Posts is a project that utilizes OpenAI Embedding API to generate related blog post tags for a given Ghost Blogging site. The project provides the functionality to display "Related Posts" at the bottom of each blog post. Currently, this feature is not available in Ghost.
 
 Check out a sample blog post with related topics at the bottm:
-[[website](http://threerowselectric.com/experiences-with-the-standard-suspension-on-bmw-ix50-what-type-of-suspension-should-you-pick/)](http://threerowselectric.com/experiences-with-the-standard-suspension-on-bmw-ix50-what-type-of-suspension-should-you-pick/)
+http://threerowselectric.com/experiences-with-the-standard-suspension-on-bmw-ix50-what-type-of-suspension-should-you-pick/
 
 The project comprises of two scripts that can be executed either on a local machine or directly on the server. Unless the site has tens of thousands of blog posts, running the scripts on a local machine should suffice.
 
