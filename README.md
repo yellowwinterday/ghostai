@@ -42,7 +42,7 @@ MAX_RELATED_BLOG_COUNT=20
 
 After all set, start the script as following:
 ```sh
-python ghost_relation_tags.py
+python setup_related_blogs.py
 
 ```
 
