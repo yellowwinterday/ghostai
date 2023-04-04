@@ -1,3 +1,6 @@
+For discussion about this project. Please refer to this forum post:
+https://forum.ghost.org/t/ghostai-ghost-openai-integration/37578
+
 # Ghost Blog Relationship
 
 GhostAI Related Posts is a project that utilizes OpenAI Embedding API to generate related blog post tags for a given Ghost Blogging site. The project provides the functionality to display "Related Posts" at the bottom of each blog post. Currently, this feature is not available in Ghost.
