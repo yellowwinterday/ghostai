@@ -137,8 +137,14 @@ def generateEmbeddingsForAllBlogs():
                     try:
                         embedding = get_embedding(postContent, engine='text-embedding-ada-002')
                     except Exception as e:
-                        print('Blog failed to convert due to temporary error.\nID:'+id+'\nTitle'+title)
+                        print('Blog failed to convert due to error:')
+                        print(e)
+                        print('ID:'+id+'\nTitle'+title)
+                        print('Post content:'+str(postContent))
+                        print('Original mobiledoc:'+str(mobiledoc))
+                        print('Original cards:'+str(cards))
                         continue
+
 
                 newdf = pd.DataFrame({"blog_id":[id],"title":[title],"embedding":[embedding]})
                 newdf.to_csv(embedding_file_path,index=None)
