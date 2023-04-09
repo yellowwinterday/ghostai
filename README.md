@@ -1,3 +1,6 @@
+For discussion about this project. Please refer to this forum post:
+https://forum.ghost.org/t/ghostai-ghost-openai-integration/37578
+
 # Ghost Blog Relationship
 
 GhostAI Related Posts is a project that utilizes OpenAI Embedding API to generate related blog post tags for a given Ghost Blogging site. The project provides the functionality to display "Related Posts" at the bottom of each blog post. Currently, this feature is not available in Ghost.
@@ -7,7 +10,7 @@ http://threerowselectric.com/experiences-with-the-standard-suspension-on-bmw-ix5
 
 The project comprises of two scripts that can be executed either on a local machine or directly on the server. Unless the site has tens of thousands of blog posts, running the scripts on a local machine should suffice.
 
-The first script iterates through all public blog posts on the server and extracts the text content, which is then sent to the OpenAI (Ada model) to generate a set of vectors. These vectors are then stored in a text file. The script also supports incremental generation, which means that it only generates vectors for blog posts that have not yet been processed.
+The first script iterates through all public blog posts on the server and extracts the text content, which is then sent to the OpenAI (Ada model) to generate a set of vectors. These vectors are then stored in a text file (find them in ./output/). The script also supports incremental generation, which means that it only generates vectors for blog posts that have not yet been processed.
 
 The second script iterates through all the vectors in the directory and ranks their similarity by giving a score. For each blog post, a few other blog posts with high similarity ranking will be grouped together. Ghost internal tagging feature is used for the grouping mechanism, and each blog post ID becomes the internal tag name.
 
