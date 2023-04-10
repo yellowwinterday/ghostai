@@ -8,6 +8,7 @@ import configparser
 import pandas as pd
 import numpy as np
 import openai
+import logging
 
 from datetime import datetime as date
 from openai.embeddings_utils import cosine_similarity
@@ -31,6 +32,7 @@ if len(key) == 0:
 print("GHOST_ADMIN_API_KEY ready")
 
 url = config['BASIC']['GHOST_SITE_URL']
+log_path = config['BASIC']['EMBEDDING_LOG_PATH']
 output_path = config['BASIC']['EMBEDDING_OUTPUT_PATH']
 max_related_count = int(config['BASIC']['MAX_RELATED_BLOG_COUNT'])
 
@@ -41,6 +43,19 @@ if not os.path.exists(output_path):
 #else:
 #    print("Directory '{output_path}' already exists.")
 
+if not os.path.exists(log_path):
+    os.makedirs(log_path)
+    print("Directory '{log_path}' created.")
+#else:
+#    print("Directory '{log_path}' already exists.")
+
+# Configure logging
+logging.basicConfig(
+    filename=str(log_path)+'/relation_tags.log',
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s]: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+)
 
 def getAllBlogIDs():
     files = os.scandir(output_path)
@@ -65,6 +80,7 @@ def readEmbedding():
             newdf = pd.DataFrame({"blog_id":str(blog_id),"title":blog_df['title'],"embedding":blog_df['embedding']})
             df = pd.concat([df,newdf],ignore_index=True)
         else:
+            logging.info("Missing embedding or blog_id for topic-"+str(blog_id))
             print("Missing embedding or blog_id for topic-"+str(blog_id))
     return df
 
@@ -166,15 +182,18 @@ def setupRelationship():
             similar_df = similar_df.drop(columns=['embedding'])
             top_results = similar_df.sort_values("similarities", ascending=False).head(max_related_count)
             #top_title_list = top_results.loc[:, 'title'].tolist()
-            #print(top_results)
+            logging.info(top_results)
             top_results.to_csv(output_path+"/blog-"+str(blog_id)+"-relations.csv")
             print("Generated relation for blog-"+str(blog_id)+" successful")
+            logging.info("Generated relation for blog-"+str(blog_id)+" successful")
             related_ids = top_results['blog_id'].tolist()
             #print(related_ids)
             if ghost_update_interal_tags(url,blog_id,related_ids):
                 print("Updated tags for blog-"+str(blog_id)+" successful")
+                logging.info("Updated tags for blog-"+str(blog_id)+" successful")
         else:
             print("Missing embedding for blog-"+str(blog_id))
+            logging.info("Missing embedding for blog-"+str(blog_id))
 
 setupRelationship()
 

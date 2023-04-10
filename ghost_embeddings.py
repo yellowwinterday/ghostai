@@ -8,6 +8,7 @@ import configparser
 import pandas as pd
 import numpy as np
 import openai
+import logging
 
 from datetime import datetime as date
 from openai.embeddings_utils import get_embedding
@@ -47,15 +48,30 @@ print("OPENAI_API_KEY ready")
 openai.api_key = openai_key
 
 url = config['BASIC']['GHOST_SITE_URL']
+log_path = config['BASIC']['EMBEDDING_LOG_PATH']
 output_path = config['BASIC']['EMBEDDING_OUTPUT_PATH']
 max_related_count = int(config['BASIC']['MAX_RELATED_BLOG_COUNT'])
 
-
 if not os.path.exists(output_path):
     os.makedirs(output_path)
-    print("Directory '{output_path}' created.")
+    print("Directory "+str(output_path)+" created.")
 #else:
-#    print("Directory '{output_path}' already exists.")
+#    print("Directory "+str(output_path)+" already exists.")
+
+if not os.path.exists(log_path):
+    os.makedirs(log_path)
+    print("Directory "+str(log_path)+" created.")
+#else:
+#    print("Directory "+str(log_path)+" already exists.")
+
+# Configure logging
+logging.basicConfig(
+    filename=str(log_path)+'/embedding.log',
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s]: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+)
+
 
 def fetchBlogPage(page):
     # Split the key into ID and SECRET
@@ -121,6 +137,9 @@ def generateEmbeddingsForAllBlogs():
                         content = content.replace('<p>','')
                         content = content.replace('</p>','\n')
                         postContent = postContent + headContent + '\n' + content + '\n'
+                    elif card[0] == 'html':
+                        htmlString = card[1]['html']
+                        postContent = postContent + htmlString + '\n'
 
                 sections = mobiledoc['sections']
                 for section in sections:
@@ -143,12 +162,20 @@ def generateEmbeddingsForAllBlogs():
                         print('Post content:'+str(postContent))
                         print('Original mobiledoc:'+str(mobiledoc))
                         print('Original cards:'+str(cards))
+                        logging.info('Blog failed to convert due to error:')
+                        logging.info(e)
+                        logging.info('ID:'+id+'\nTitle'+title)
+                        logging.info('Post content:'+str(postContent))
+                        logging.info('Original mobiledoc:'+str(mobiledoc))
+                        logging.info('Original cards:'+str(cards))
                         continue
 
 
                 newdf = pd.DataFrame({"blog_id":[id],"title":[title],"embedding":[embedding]})
                 newdf.to_csv(embedding_file_path,index=None)
                 print("blog-"+str(id)+" embedding generated")
+                logging.info("blog-"+str(id)+" embedding generated")
+                logging.info('Embedded content:'+str(postContent))
             #else:
                 #print("blog-"+str(id)+" embedding existed")
 
