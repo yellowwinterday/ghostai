@@ -77,9 +77,9 @@ We also provided a script to generate tags for your blogs.
 python ghost_embeddings.py
 ```
 
-Note that the script will not override your existing tags, instead it's only adding new tags.
+Please note that the script will not overwrite your existing tags; instead, it will merely add new ones.
 
-To override all your existing tags, please do this:
+To overwrite all your existing tags, please follow these steps:
 ```sh
 python ghost_embeddings.py reset
 ```
