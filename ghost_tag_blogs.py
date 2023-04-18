@@ -195,16 +195,31 @@ def ghost_update_public_tags(site_url,blog_id,tags):
 
 
     tag_dict_array = []
-    '''
+
+    for original_tag in original_tags:
+        tag_dict = {'name':str(original_tag['name']),'slug':str(original_tag['slug'])}
+        if original_tag['name'][0] == '#':
+            tag_dict_array.append(tag_dict)
+
     for original_tag in original_tags:
         tag_dict = {'name':str(original_tag['name']),'slug':str(original_tag['slug'])}
         if original_tag['name'][0] != '#':
-            tag_dict_array.append(tag_dict)
+            logging.info("Find existing tags:"+original_tag['name'])
+            if reset_all:
+                logging.info('over ride new tags')
+            else:
+                tag_dict_array.append(tag_dict)
 
-    '''
     for tag in tags:
         tag_dict = {'name':str(tag),'slug':str(tag)}
-        tag_dict_array.append(tag_dict)
+        duplicate_tag = False
+        for original_tag in tag_dict_array:
+            if original_tag['name'] == str(tag):
+                logging.info("Find duplicated tags:"+original_tag['name'])
+                duplicate_tag = True
+        if duplicate_tag == False:
+            tag_dict_array.append(tag_dict)
+
 
     logging.info('Updated tags:'+str(tag_dict_array))
 
@@ -240,6 +255,7 @@ def generateAndUpdateTagsForAllBlogs():
     print(str(total_page)+' pages to load')
     print(str(total_blog)+' blogs to load')
 
+    count = 0
     for page in range(1,total_page+1):
         response = fetchBlogPage(page).json()
         posts = response['posts']
@@ -310,12 +326,15 @@ def generateAndUpdateTagsForAllBlogs():
                     f = open(tagging_file_path, "w")
                     f.write(str(', '.join(qualified_tags)))
                     f.close()
+                    count += 1
                 else:
                     print("Updated blog id:"+post['id']+" tags failed.")
                     logging.info("Updated blog id:"+post['id']+" tags failed.")
 
             else:
                 print("blog-"+str(id)+" tags existed")
+    print("Total"+str(count)+" blog tagged.")
+    logging.info("Total"+str(count)+" blog tagged.")
 
 
 generateAndUpdateTagsForAllBlogs()
