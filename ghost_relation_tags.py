@@ -32,7 +32,7 @@ if len(key) == 0:
 print("GHOST_ADMIN_API_KEY ready")
 
 url = config['BASIC']['GHOST_SITE_URL']
-log_path = config['BASIC']['EMBEDDING_LOG_PATH']
+log_path = config['BASIC']['LOG_PATH']
 output_path = config['BASIC']['EMBEDDING_OUTPUT_PATH']
 max_related_count = int(config['BASIC']['MAX_RELATED_BLOG_COUNT'])
 

@@ -14,6 +14,7 @@ from datetime import datetime as date
 from openai.embeddings_utils import get_embedding
 from openai.embeddings_utils import cosine_similarity
 
+
 config = configparser.ConfigParser()
 config.read('./.env')
 key = ""
@@ -45,6 +46,11 @@ if len(openai_key) == 0:
 
 print("OPENAI_API_KEY ready")
 
+prompt = "Please find 5 tags of the following paragraphs, separated by commas, each tag with only one word. Paragraph:"
+prompt += '\n'
+
+print("Prompt: " + prompt)
+
 openai.api_key = openai_key
 
 url = config['BASIC']['GHOST_SITE_URL']
@@ -66,12 +72,24 @@ if not os.path.exists(log_path):
 
 # Configure logging
 logging.basicConfig(
-    filename=str(log_path)+'/embedding.log',
+    filename=str(log_path)+'/tagging.log',
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s]: %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S',
 )
 
+reset_all = False
+if len(sys.argv) > 1:
+    if str(sys.argv[1]).upper() == "RESET":
+        reset_all = True
+
+
+if reset_all:
+    print("Resetting all tags")
+    logging.info("Resetting all tags")
+else:
+    print("Generate tags for new blogs")
+    logging.info("Generate tags for new blogs")
 
 def fetchBlogPage(page):
     # Split the key into ID and SECRET
@@ -96,17 +114,122 @@ def fetchBlogPage(page):
 
     return requests.get(geturl, headers=headers)
 
-def getAllBlogIDs():
-    files = os.scandir(output_path)
-    blog_ids = []
-    for file in files:
-        if re.search('blog-([\d\w]*)-embedding.csv', file.name):
-            blog_id = re.search('blog-([\d\w]*)-embedding.csv', file.name).group(1)
-            blog_ids.append(blog_id)
-    return blog_ids
+def tagContent(prompt, content):
+    prompt += content
+    if len(prompt) > 10000:
+        prompt = prompt[:10000]
+
+    completion = openai.ChatCompletion.create(
+      model="gpt-3.5-turbo",
+      messages=[
+        {"role": "user", "content": prompt},
+      ],
+      temperature=0.4,
+      max_tokens=1000,
+      top_p=1,
+      frequency_penalty=0.2,
+      presence_penalty=1.6
+    )
+
+    result = completion.choices[0].message['content']
+    result = result.lstrip()
+    logging.info('Generate Tag Result:'+str(result))
+    #print(result)
 
 
-def generateEmbeddingsForAllBlogs():
+    tags = result.replace("\n",",")
+    tags = tags.split(",")
+    #print(tags)
+
+    qualified_tags = []
+    for tag in tags:
+        tag_words = tag.lstrip()
+        if len(tag_words) > 0:
+            wordscount = tag_words.split(" ")
+            if len(wordscount) <= 2:
+                qualified_tags.append(tag_words.upper())
+
+
+    #print(qualified_tags)
+
+    #final_tags = ', '.join(qualified_tags)
+    #print(final_tags)
+    return qualified_tags
+
+def ghost_update_public_tags(site_url,blog_id,tags):
+
+    # Split the key into ID and SECRET
+    id, secret = key.split(':')
+
+    # Prepare header and payload
+    iat = int(date.now().timestamp())
+
+    header = {'alg': 'HS256', 'typ': 'JWT', 'kid': id}
+    payload = {
+        'iat': iat,
+        'exp': iat + 5 * 60,
+        'aud': '/admin/'
+    }
+
+    # Create the token (including decoding secret)
+    token = jwt.encode(payload, bytes.fromhex(secret), algorithm='HS256', headers=header)
+
+    # Make an authenticated request to create a post
+    geturl = site_url+'ghost/api/admin/posts/'+blog_id
+    headers = {'Authorization': 'Ghost {}'.format(token)}
+
+    try:
+        r = requests.get(geturl, headers=headers)
+        r.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        # catastrophic error. bail.
+        raise SystemExit(e)
+
+    #print(r.json()['posts'][0]['updated_at'])
+    updated_at = r.json()['posts'][0]['updated_at']
+    original_tags =r.json()['posts'][0]['tags']
+
+    # Make an authenticated request to edit an item
+    headers = {'Authorization': 'Ghost {}'.format(token)}
+    editurl = site_url+'ghost/api/admin/posts/'+blog_id+'/?formats=mobiledoc%2Clexical'
+
+
+    tag_dict_array = []
+    '''
+    for original_tag in original_tags:
+        tag_dict = {'name':str(original_tag['name']),'slug':str(original_tag['slug'])}
+        if original_tag['name'][0] != '#':
+            tag_dict_array.append(tag_dict)
+
+    '''
+    for tag in tags:
+        tag_dict = {'name':str(tag),'slug':str(tag)}
+        tag_dict_array.append(tag_dict)
+
+    logging.info('Updated tags:'+str(tag_dict_array))
+
+    body = {
+        "posts":[
+            {
+                "tags":tag_dict_array,
+                "updated_at":updated_at
+            }
+        ]
+    }
+
+    try:
+        r = requests.put(editurl, json=body, headers=headers)
+        r.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print("Update tag failed due to request: " + str(e))
+        return False
+    except Exception as e:
+        print("Update tag failed: " + str(e))
+        return False
+    #print(r.json()['posts'][0]['tags'])
+    return True
+
+def generateAndUpdateTagsForAllBlogs():
     response = fetchBlogPage(1)
 
     if int(response.status_code) != 200:
@@ -123,8 +246,16 @@ def generateEmbeddingsForAllBlogs():
         for post in posts:
             postContent = ""
             id = post['id']
-            embedding_file_path = output_path+"/blog-"+str(id)+"-embedding.csv"
-            if not os.path.exists(embedding_file_path):
+            tagging_file_path = output_path+"/blog-"+str(id)+"-tags.txt"
+            needs_tagging = False
+            if reset_all or not os.path.exists(tagging_file_path):
+                needs_tagging = True
+
+            if reset_all and os.path.exists(tagging_file_path):
+                print("Blog id:"+post['id']+" tags existed but require reset.")
+                logging.info("Blog id:"+post['id']+" tags existed but require reset.")
+
+            if needs_tagging:
                 title = post['title']
                 mobiledoc = json.loads(post['mobiledoc'])
                 cards = mobiledoc['cards']
@@ -150,11 +281,10 @@ def generateEmbeddingsForAllBlogs():
                                 postContent = postContent + str(paragraph[0][3])
 
                 try:
-                    embedding = get_embedding(postContent, engine='text-embedding-ada-002')
+                    qualified_tags = tagContent(prompt, postContent)
                 except Exception as e:
-                    #Do a simple retry
                     try:
-                        embedding = get_embedding(postContent, engine='text-embedding-ada-002')
+                        qualified_tags = tagContent(prompt, postContent)
                     except Exception as e:
                         print('Blog failed to convert due to error:')
                         print(e)
@@ -162,7 +292,7 @@ def generateEmbeddingsForAllBlogs():
                         print('Post content:'+str(postContent))
                         print('Original mobiledoc:'+str(mobiledoc))
                         print('Original cards:'+str(cards))
-                        logging.info('Blog failed to convert due to error:')
+                        logging.info('Blog failed to tag due to error:')
                         logging.info(e)
                         logging.info('ID:'+id+'\nTitle'+title)
                         logging.info('Post content:'+str(postContent))
@@ -170,14 +300,22 @@ def generateEmbeddingsForAllBlogs():
                         logging.info('Original cards:'+str(cards))
                         continue
 
+                print("blog-"+str(id)+" tags generated: "+str(', '.join(qualified_tags)))
+                logging.info("blog-"+str(id)+" tags generated")
+                logging.info('Tagging content:'+str(postContent))
 
-                newdf = pd.DataFrame({"blog_id":[id],"title":[title],"embedding":[embedding]})
-                newdf.to_csv(embedding_file_path,index=None)
-                print("blog-"+str(id)+" embedding generated")
-                logging.info("blog-"+str(id)+" embedding generated")
-                logging.info('Embedded content:'+str(postContent))
-            #else:
-                #print("blog-"+str(id)+" embedding existed")
+                if ghost_update_public_tags(url,id,qualified_tags):
+                    print("Updated blog id:"+post['id']+" tags, tags recorded in "+tagging_file_path)
+                    logging.info("Updated blog id:"+post['id']+" tags, tags recorded in "+tagging_file_path)
+                    f = open(tagging_file_path, "w")
+                    f.write(str(', '.join(qualified_tags)))
+                    f.close()
+                else:
+                    print("Updated blog id:"+post['id']+" tags failed.")
+                    logging.info("Updated blog id:"+post['id']+" tags failed.")
+
+            else:
+                print("blog-"+str(id)+" tags existed")
 
 
-generateEmbeddingsForAllBlogs()
+generateAndUpdateTagsForAllBlogs()
