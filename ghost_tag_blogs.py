@@ -333,8 +333,8 @@ def generateAndUpdateTagsForAllBlogs():
 
             else:
                 print("blog-"+str(id)+" tags existed")
-    print("Total"+str(count)+" blog tagged.")
-    logging.info("Total"+str(count)+" blog tagged.")
+    print("Total "+str(count)+" blog tagged.")
+    logging.info("Total "+str(count)+" blog tagged.")
 
 
 generateAndUpdateTagsForAllBlogs()
