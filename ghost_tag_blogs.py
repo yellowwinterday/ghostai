@@ -46,17 +46,19 @@ if len(openai_key) == 0:
 
 print("OPENAI_API_KEY ready")
 
-prompt = "Please find 5 tags of the following paragraphs, separated by commas, each tag with only one word. Paragraph:"
-prompt += '\n'
-
-print("Prompt: " + prompt)
-
 openai.api_key = openai_key
 
 url = config['BASIC']['GHOST_SITE_URL']
 log_path = config['BASIC']['LOG_PATH']
 output_path = config['BASIC']['EMBEDDING_OUTPUT_PATH']
 max_related_count = int(config['BASIC']['MAX_RELATED_BLOG_COUNT'])
+blog_tag_count = int(config['BASIC']['BLOG_TAG_COUNT'])
+
+prompt = "Please find "+str(blog_tag_count)+" tags of the following paragraphs, separated by commas, each tag with only one word. Paragraph:"
+prompt += '\n'
+
+print("Prompt: " + prompt)
+
 
 if not os.path.exists(output_path):
     os.makedirs(output_path)
