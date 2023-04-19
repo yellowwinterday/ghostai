@@ -74,14 +74,14 @@ python ghost_relation_tags.py
 
 We also provided a script to generate tags for your blogs.
 ```sh
-python ghost_embeddings.py
+python ghost_tag_blogs.py
 ```
 
 Please note that the script will not overwrite your existing tags; instead, it will merely add new ones.
 
 To overwrite all your existing tags, please follow these steps:
 ```sh
-python ghost_embeddings.py reset
+python ghost_tag_blogs.py reset
 ```
 
 
