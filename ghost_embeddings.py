@@ -149,6 +149,11 @@ def generateEmbeddingsForAllBlogs():
                             if len(paragraph[0]) > 3:
                                 postContent = postContent + str(paragraph[0][3])
 
+                html = ""
+                if 'html' in post:
+                    html = json.loads(post['html'])
+                    postContent = postContent + str(html)
+
                 try:
                     embedding = get_embedding(postContent, engine='text-embedding-ada-002')
                 except Exception as e:
@@ -162,12 +167,18 @@ def generateEmbeddingsForAllBlogs():
                         print('Post content:'+str(postContent))
                         print('Original mobiledoc:'+str(mobiledoc))
                         print('Original cards:'+str(cards))
+                        print('Original html:'+str(html))
+                        print('Original post:')
+                        print(post)
                         logging.info('Blog failed to convert due to error:')
                         logging.info(e)
                         logging.info('ID:'+id+'\nTitle'+title)
                         logging.info('Post content:'+str(postContent))
                         logging.info('Original mobiledoc:'+str(mobiledoc))
                         logging.info('Original cards:'+str(cards))
+                        logging.info('Original html:'+str(html))
+                        logging.info('Original post:')
+                        logging.info(post)
                         continue
 
 
