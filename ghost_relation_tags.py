@@ -109,9 +109,16 @@ def ghost_update_interal_tags(url,blog_id,tags):
     try:
         r = requests.get(geturl, headers=headers)
         r.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        # catastrophic error. bail.
-        raise SystemExit(e)
+    except requests.exceptions.HTTPError as e:
+        print("Get blog tag failed due to http error: " + str(e))
+        if e.response.status_code == 404:
+            print("Error: Page not found (404)")
+        else:
+            print(f"An HTTP error occurred: {e}")
+        return False
+    except Exception as e:
+        print("Get blog tag failed due to exception: " + str(e))
+        return False
 
     #print(r.json()['posts'][0]['updated_at'])
     updated_at = r.json()['posts'][0]['updated_at']
@@ -119,6 +126,7 @@ def ghost_update_interal_tags(url,blog_id,tags):
 
     # Make an authenticated request to edit an item
     headers = {'Authorization': 'Ghost {}'.format(token)}
+    # DEBUG
     editurl = url+'ghost/api/admin/posts/'+blog_id+'/?formats=mobiledoc%2Clexical'
 
 
@@ -151,12 +159,17 @@ def ghost_update_interal_tags(url,blog_id,tags):
     try:
         r = requests.put(editurl, json=body, headers=headers)
         r.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        print("Update tag failed due to request: " + str(e))
+    except requests.exceptions.HTTPError as e:
+        print("Update tag failed due to http error: " + str(e))
+        if e.response.status_code == 404:
+            print("Error: Page not found (404)")
+        else:
+            print(f"An HTTP error occurred: {e}")
         return False
     except Exception as e:
-        print("Update tag failed: " + str(e))
+        print("Update tag failed due to exception: " + str(e))
         return False
+
     #print(r.json()['posts'][0]['tags'])
     return True
 
@@ -191,6 +204,9 @@ def setupRelationship():
             if ghost_update_interal_tags(url,blog_id,related_ids):
                 print("Updated tags for blog-"+str(blog_id)+" successful")
                 logging.info("Updated tags for blog-"+str(blog_id)+" successful")
+            else:
+                print("Failed to update tags. If this issue persists, please clean up output path and run the script again.")
+                logging.info("Failed to update tags. If this issue persists, please clean up output path and run the script again.")
         else:
             print("Missing embedding for blog-"+str(blog_id))
             logging.info("Missing embedding for blog-"+str(blog_id))

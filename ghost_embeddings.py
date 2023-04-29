@@ -126,6 +126,8 @@ def generateEmbeddingsForAllBlogs():
             embedding_file_path = output_path+"/blog-"+str(id)+"-embedding.csv"
             if not os.path.exists(embedding_file_path):
                 title = post['title']
+                postContent = postContent + str(title) + '\n'
+
                 mobiledoc = json.loads(post['mobiledoc'])
                 cards = mobiledoc['cards']
                 for card in cards:
@@ -163,7 +165,7 @@ def generateEmbeddingsForAllBlogs():
                     except Exception as e:
                         print('Blog failed to convert due to error:')
                         print(e)
-                        print('ID:'+id+'\nTitle'+title)
+                        print('ID:'+id+'\nTitle:'+title)
                         print('Post content:'+str(postContent))
                         print('Original mobiledoc:'+str(mobiledoc))
                         print('Original cards:'+str(cards))
@@ -172,7 +174,7 @@ def generateEmbeddingsForAllBlogs():
                         print(post)
                         logging.info('Blog failed to convert due to error:')
                         logging.info(e)
-                        logging.info('ID:'+id+'\nTitle'+title)
+                        logging.info('ID:'+id+'\nTitle:'+title)
                         logging.info('Post content:'+str(postContent))
                         logging.info('Original mobiledoc:'+str(mobiledoc))
                         logging.info('Original cards:'+str(cards))
