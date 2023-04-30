@@ -110,11 +110,30 @@ def ghost_update_interal_tags(url,blog_id,tags):
         r = requests.get(geturl, headers=headers)
         r.raise_for_status()
     except requests.exceptions.HTTPError as e:
-        print("Get blog tag failed due to http error: " + str(e))
+        logging.info("Get blog tag failed due to http error: " + str(e))
         if e.response.status_code == 404:
-            print("Error: Page not found (404)")
+            print("Clean up missing blog cache:")
+            logging.info("Clean up missing cache:")
+
+            missing_embedding_file_path = output_path+"/blog-"+str(blog_id)+"-embedding.csv"
+            if os.path.isfile(missing_embedding_file_path):
+                try:
+                    os.remove(missing_embedding_file_path)
+                    print(f"Cache file '{missing_embedding_file_path}' successfully cleaned.")
+                    logging.info(f"Cache file '{missing_embedding_file_path}' successfully cleaned.")
+                except OSError as e:
+                    print("Error deleting cache file: {e}")
+
+            missing_relation_file_path = output_path+"/blog-"+str(blog_id)+"-relations.csv"
+            if os.path.isfile(missing_relation_file_path):
+                try:
+                    os.remove(missing_relation_file_path)
+                    print(f"Cache file '{missing_relation_file_path}' successfully cleaned.")
+                    logging.info(f"Cache file '{missing_relation_file_path}' successfully cleaned.")
+                except OSError as e:
+                    print("Error deleting cache file: {e}")
         else:
-            print(f"An HTTP error occurred: {e}")
+            logging.info(f"An HTTP error occurred: {e}")
         return False
     except Exception as e:
         print("Get blog tag failed due to exception: " + str(e))
@@ -162,9 +181,9 @@ def ghost_update_interal_tags(url,blog_id,tags):
     except requests.exceptions.HTTPError as e:
         print("Update tag failed due to http error: " + str(e))
         if e.response.status_code == 404:
-            print("Error: Page not found (404)")
+            logging.info("Error: Page not found (404)")
         else:
-            print(f"An HTTP error occurred: {e}")
+            logging.info(f"An HTTP error occurred: {e}")
         return False
     except Exception as e:
         print("Update tag failed due to exception: " + str(e))
@@ -205,7 +224,7 @@ def setupRelationship():
                 print("Updated tags for blog-"+str(blog_id)+" successful")
                 logging.info("Updated tags for blog-"+str(blog_id)+" successful")
             else:
-                print("Failed to update tags. If this issue persists, please clean up output path and run the script again.")
+                #print("Failed to update tags. If this issue persists, please clean up output path and run the script again.")
                 logging.info("Failed to update tags. If this issue persists, please clean up output path and run the script again.")
         else:
             print("Missing embedding for blog-"+str(blog_id))
