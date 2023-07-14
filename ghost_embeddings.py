@@ -156,39 +156,50 @@ def generateEmbeddingsForAllBlogs():
                     html = json.loads(post['html'])
                     postContent = postContent + str(html)
 
-                try:
-                    embedding = get_embedding(postContent, engine='text-embedding-ada-002')
-                except Exception as e:
-                    #Do a simple retry
+                if len(postContent) > 0:
                     try:
                         embedding = get_embedding(postContent, engine='text-embedding-ada-002')
                     except Exception as e:
-                        print('Blog failed to convert due to error:')
-                        print(e)
-                        print('ID:'+id+'\nTitle:'+title)
-                        print('Post content:'+str(postContent))
-                        print('Original mobiledoc:'+str(mobiledoc))
-                        print('Original cards:'+str(cards))
-                        print('Original html:'+str(html))
-                        print('Original post:')
-                        print(post)
-                        logging.info('Blog failed to convert due to error:')
-                        logging.info(e)
-                        logging.info('ID:'+id+'\nTitle:'+title)
-                        logging.info('Post content:'+str(postContent))
-                        logging.info('Original mobiledoc:'+str(mobiledoc))
-                        logging.info('Original cards:'+str(cards))
-                        logging.info('Original html:'+str(html))
-                        logging.info('Original post:')
-                        logging.info(post)
-                        continue
+                        #Do a simple retry
+                        try:
+                            embedding = get_embedding(postContent, engine='text-embedding-ada-002')
+                        except Exception as e:
+                            print('Blog failed to convert due to error:')
+                            print(e)
+                            print('ID:'+id+'\nTitle:'+title)
+                            print('Post content:'+str(postContent))
+                            print('Original mobiledoc:'+str(mobiledoc))
+                            print('Original cards:'+str(cards))
+                            print('Original html:'+str(html))
+                            print('Original post:')
+                            print(post)
+                            logging.info('Blog failed to convert due to error:')
+                            logging.info(e)
+                            logging.info('ID:'+id+'\nTitle:'+title)
+                            logging.info('Post content:'+str(postContent))
+                            logging.info('Original mobiledoc:'+str(mobiledoc))
+                            logging.info('Original cards:'+str(cards))
+                            logging.info('Original html:'+str(html))
+                            logging.info('Original post:')
+                            logging.info(post)
+                            continue
 
 
-                newdf = pd.DataFrame({"blog_id":[id],"title":[title],"embedding":[embedding]})
-                newdf.to_csv(embedding_file_path,index=None)
-                print("blog-"+str(id)+" embedding generated")
-                logging.info("blog-"+str(id)+" embedding generated")
-                logging.info('Embedded content:'+str(postContent))
+                    newdf = pd.DataFrame({"blog_id":[id],"title":[title],"embedding":[embedding]})
+                    newdf.to_csv(embedding_file_path,index=None)
+                    print("blog-"+str(id)+" embedding generated")
+                    logging.info("blog-"+str(id)+" embedding generated")
+                    logging.info('Embedded content:'+str(postContent))
+                else:
+                    print("blog-"+str(id)+" content failed to load. Skip to next blog.")
+                    logging.info("blog-"+str(id)+" content failed to load. Skip to next blog.")
+                    logging.info('ID:'+id+'\nTitle:'+title)
+                    logging.info('Post content:'+str(postContent))
+                    logging.info('Original mobiledoc:'+str(mobiledoc))
+                    logging.info('Original cards:'+str(cards))
+                    logging.info('Original html:'+str(html))
+                    logging.info('Original post:')
+                    logging.info(post)
             #else:
                 #print("blog-"+str(id)+" embedding existed")
 
