@@ -123,12 +123,32 @@ def generateEmbeddingsForAllBlogs():
         for post in posts:
             postContent = ""
             id = post['id']
+            print("Parsing blog-"+str(id))
+            logging.info("Parsing blog-"+str(id))
             embedding_file_path = output_path+"/blog-"+str(id)+"-embedding.csv"
             if not os.path.exists(embedding_file_path):
                 title = post['title']
                 postContent = postContent + str(title) + '\n'
 
-                mobiledoc = json.loads(post['mobiledoc'])
+                if post['mobiledoc'] == None:
+                    print("Blog failed to parse content due to missing 'mobiledoc' data.")
+                    logging.info("Blog failed to parse content due to missing 'mobiledoc' data.")
+                    logging.info("Blog post content:"+str(post))
+                    print("Skip to next blog.")
+                    continue
+
+                try:
+                    mobiledoc = json.loads(post['mobiledoc'])
+                except Exception as e:
+                    #Do a simple retry
+                    print('Blog failed to parse mobiledoc data due to error:')
+                    print(e)
+                    logging.info('Blog failed to parse mobiledoc data due to error:')
+                    logging.info(e)
+                    print("Skip to next blog.")
+                    continue
+
+
                 cards = mobiledoc['cards']
                 for card in cards:
                     if card[0] == 'toggle':
@@ -189,7 +209,7 @@ def generateEmbeddingsForAllBlogs():
                     newdf.to_csv(embedding_file_path,index=None)
                     print("blog-"+str(id)+" embedding generated")
                     logging.info("blog-"+str(id)+" embedding generated")
-                    logging.info('Embedded content:'+str(postContent))
+                    #logging.info('Embedded content:'+str(postContent))
                 else:
                     print("blog-"+str(id)+" content failed to load. Skip to next blog.")
                     logging.info("blog-"+str(id)+" content failed to load. Skip to next blog.")
