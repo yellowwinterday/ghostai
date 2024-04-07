@@ -11,8 +11,7 @@ import openai
 import logging
 
 from datetime import datetime as date
-from openai.embeddings_utils import get_embedding
-from openai.embeddings_utils import cosine_similarity
+from openai import OpenAI
 
 config = configparser.ConfigParser()
 config.read('./.env')
@@ -92,7 +91,7 @@ def fetchBlogPage(page):
 
     # Make an authenticated request to list all posts
     headers = {'Authorization': 'Ghost {}'.format(token)}
-    geturl = url+'ghost/api/admin/posts/?page='+str(page)
+    geturl = url+'/ghost/api/admin/posts/?page='+str(page)
 
     return requests.get(geturl, headers=headers)
 

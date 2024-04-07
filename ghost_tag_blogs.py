@@ -7,12 +7,13 @@ import jwt	# pip install pyjwt
 import configparser
 import pandas as pd
 import numpy as np
-import openai
+from openai import OpenAI
+
+
 import logging
 
 from datetime import datetime as date
-from openai.embeddings_utils import get_embedding
-from openai.embeddings_utils import cosine_similarity
+from openai import OpenAI
 
 
 config = configparser.ConfigParser()
@@ -45,8 +46,7 @@ if len(openai_key) == 0:
         openai_key = os.environ.get('OPENAI_API_KEY')
 
 print("OPENAI_API_KEY ready")
-
-openai.api_key = openai_key
+client = OpenAI(api_key=openai_key)
 
 url = config['BASIC']['GHOST_SITE_URL']
 log_path = config['BASIC']['LOG_PATH']
@@ -112,7 +112,7 @@ def fetchBlogPage(page):
 
     # Make an authenticated request to list all posts
     headers = {'Authorization': 'Ghost {}'.format(token)}
-    geturl = url+'ghost/api/admin/posts/?page='+str(page)
+    geturl = url+'/ghost/api/admin/posts/?page='+str(page)
 
     return requests.get(geturl, headers=headers)
 
@@ -121,19 +121,17 @@ def tagContent(prompt, content):
     if len(prompt) > 10000:
         prompt = prompt[:10000]
 
-    completion = openai.ChatCompletion.create(
-      model="gpt-3.5-turbo",
-      messages=[
-        {"role": "user", "content": prompt},
-      ],
-      temperature=0.4,
-      max_tokens=1000,
-      top_p=1,
-      frequency_penalty=0.2,
-      presence_penalty=1.6
-    )
+    completion = client.chat.completions.create(model="gpt-3.5-turbo",
+    messages=[
+      {"role": "user", "content": prompt},
+    ],
+    temperature=0.4,
+    max_tokens=1000,
+    top_p=1,
+    frequency_penalty=0.2,
+    presence_penalty=1.6)
 
-    result = completion.choices[0].message['content']
+    result = completion.choices[0].message.content
     result = result.lstrip()
     logging.info('Generate Tag Result:'+str(result))
     #print(result)
@@ -177,7 +175,7 @@ def ghost_update_public_tags(site_url,blog_id,tags):
     token = jwt.encode(payload, bytes.fromhex(secret), algorithm='HS256', headers=header)
 
     # Make an authenticated request to create a post
-    geturl = site_url+'ghost/api/admin/posts/'+blog_id
+    geturl = site_url+'/ghost/api/admin/posts/'+blog_id
     headers = {'Authorization': 'Ghost {}'.format(token)}
 
     try:
@@ -193,7 +191,7 @@ def ghost_update_public_tags(site_url,blog_id,tags):
 
     # Make an authenticated request to edit an item
     headers = {'Authorization': 'Ghost {}'.format(token)}
-    editurl = site_url+'ghost/api/admin/posts/'+blog_id+'/?formats=mobiledoc%2Clexical'
+    editurl = site_url+'/ghost/api/admin/posts/'+blog_id+'/?formats=mobiledoc%2Clexical'
 
 
     tag_dict_array = []
@@ -223,7 +221,7 @@ def ghost_update_public_tags(site_url,blog_id,tags):
             tag_dict_array.append(tag_dict)
 
 
-    logging.info('Updated tags:'+str(tag_dict_array))
+    logging.info('Updated tags:'+str(tag_dict_array)) 
 
     body = {
         "posts":[

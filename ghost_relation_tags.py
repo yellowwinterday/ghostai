@@ -11,7 +11,7 @@ import openai
 import logging
 
 from datetime import datetime as date
-from openai.embeddings_utils import cosine_similarity
+from openai import OpenAI
 
 
 config = configparser.ConfigParser()
