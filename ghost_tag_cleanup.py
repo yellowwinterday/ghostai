@@ -96,7 +96,7 @@ def fetchBlogPage(page):
 
     # Make an authenticated request to list all posts
     headers = {'Authorization': 'Ghost {}'.format(token)}
-    geturl = url+'ghost/api/admin/posts/?page='+str(page)
+    geturl = url+'/ghost/api/admin/posts/?page='+str(page)
 
     return requests.get(geturl, headers=headers)
 
@@ -136,7 +136,7 @@ def ghost_cleanup_tags(site_url,blog_id):
 
     # Make an authenticated request to edit an item
     headers = {'Authorization': 'Ghost {}'.format(token)}
-    editurl = site_url+'ghost/api/admin/posts/'+blog_id+'/?formats=mobiledoc%2Clexical'
+    editurl = site_url+'/ghost/api/admin/posts/'+blog_id+'/?formats=mobiledoc%2Clexical'
 
 
     tag_dict_array = []
