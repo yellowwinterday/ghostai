@@ -12,7 +12,7 @@ import logging
 
 from datetime import datetime as date
 from openai import OpenAI
-
+from scipy.spatial.distance import cosine
 
 config = configparser.ConfigParser()
 config.read('./.env')
@@ -84,8 +84,7 @@ def readEmbedding():
             print("Missing embedding or blog_id for topic-"+str(blog_id))
     return df
 
-def ghost_update_interal_tags(url,blog_id,tags):
-
+def ghost_update_internal_tags(url,blog_id,tags):
     # Split the key into ID and SECRET
     id, secret = key.split(':')
 
@@ -103,7 +102,7 @@ def ghost_update_interal_tags(url,blog_id,tags):
     token = jwt.encode(payload, bytes.fromhex(secret), algorithm='HS256', headers=header)
 
     # Make an authenticated request to create a post
-    geturl = url+'ghost/api/admin/posts/'+blog_id
+    geturl = url+'/ghost/api/admin/posts/'+blog_id
     headers = {'Authorization': 'Ghost {}'.format(token)}
 
     try:
@@ -146,7 +145,7 @@ def ghost_update_interal_tags(url,blog_id,tags):
     # Make an authenticated request to edit an item
     headers = {'Authorization': 'Ghost {}'.format(token)}
     # DEBUG
-    editurl = url+'ghost/api/admin/posts/'+blog_id+'/?formats=mobiledoc%2Clexical'
+    editurl = url+'/ghost/api/admin/posts/'+blog_id+'/?formats=mobiledoc%2Clexical'
 
 
     tag_dict_array = []
@@ -208,7 +207,7 @@ def setupRelationship():
             blog_df['embedding'] = blog_df['embedding'].apply(np.array) #sanity checks, make sure it's an array of strings
             blog_df['embedding'] = blog_df['embedding'].apply(eval) #sanity checks, make sure it's an array of strings
             blog_df = pd.DataFrame({"blog_id":str(blog_id),"title":blog_df['title'],"embedding":blog_df['embedding']})
-            similar_df["similarities"] = similar_df['embedding'].apply(lambda x: cosine_similarity(x, blog_df['embedding'][0]))
+            similar_df["similarities"] = similar_df['embedding'].apply(lambda x: cosine(blog_df['embedding'][0], x))
             #print(similar_df)
             similar_df = similar_df.drop(similar_df[(similar_df.blog_id == str(blog_id))].index)
             similar_df = similar_df.drop(columns=['embedding'])
@@ -220,7 +219,7 @@ def setupRelationship():
             logging.info("Generated relation for blog-"+str(blog_id)+" successful")
             related_ids = top_results['blog_id'].tolist()
             #print(related_ids)
-            if ghost_update_interal_tags(url,blog_id,related_ids):
+            if ghost_update_internal_tags(url,blog_id,related_ids):
                 print("Updated tags for blog-"+str(blog_id)+" successful")
                 logging.info("Updated tags for blog-"+str(blog_id)+" successful")
             else:

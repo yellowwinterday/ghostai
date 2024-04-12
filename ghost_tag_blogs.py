@@ -57,7 +57,7 @@ blog_tag_count = int(config['BASIC']['BLOG_TAG_COUNT'])
 prompt = "Please find "+str(blog_tag_count)+" tags of the following paragraphs, separated by commas, each tag with only one word. Paragraph:"
 prompt += '\n'
 
-print("Prompt: " + prompt)
+#print("Prompt: " + prompt)
 
 
 if not os.path.exists(output_path):

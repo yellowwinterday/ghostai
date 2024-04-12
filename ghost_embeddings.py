@@ -7,7 +7,8 @@ import jwt	# pip install pyjwt
 import configparser
 import pandas as pd
 import numpy as np
-import openai
+from openai import OpenAI
+
 import logging
 
 from datetime import datetime as date
@@ -44,7 +45,8 @@ if len(openai_key) == 0:
 
 print("OPENAI_API_KEY ready")
 
-openai.api_key = openai_key
+
+client = OpenAI(api_key=openai_key)
 
 url = config['BASIC']['GHOST_SITE_URL']
 log_path = config['BASIC']['LOG_PATH']
@@ -71,6 +73,11 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S',
 )
 
+
+def get_embedding(text_input, model="text-embedding-ada-002"):
+    response = client.embeddings.create(input=[text_input], model=model)
+    embedding = response.data[0].embedding
+    return embedding
 
 def fetchBlogPage(page):
     # Split the key into ID and SECRET
@@ -177,11 +184,11 @@ def generateEmbeddingsForAllBlogs():
 
                 if len(postContent) > 0:
                     try:
-                        embedding = get_embedding(postContent, engine='text-embedding-ada-002')
+                        embedding = get_embedding(postContent)
                     except Exception as e:
                         #Do a simple retry
                         try:
-                            embedding = get_embedding(postContent, engine='text-embedding-ada-002')
+                            embedding = get_embedding(postContent)
                         except Exception as e:
                             print('Blog failed to convert due to error:')
                             print(e)

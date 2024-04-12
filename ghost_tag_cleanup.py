@@ -120,7 +120,7 @@ def ghost_cleanup_tags(site_url,blog_id):
     token = jwt.encode(payload, bytes.fromhex(secret), algorithm='HS256', headers=header)
 
     # Make an authenticated request to create a post
-    geturl = site_url+'ghost/api/admin/posts/'+blog_id
+    geturl = site_url+'/ghost/api/admin/posts/'+blog_id
     headers = {'Authorization': 'Ghost {}'.format(token)}
 
     try:
